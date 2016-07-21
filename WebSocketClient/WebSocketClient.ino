@@ -2,9 +2,7 @@
 #include <WebSocketClient.h>
 #include "./passwords.h"
 
-#define DEBUGGING
-
-char path[] = "/control";
+char path[] = "/";
 char host[] = "192.168.1.127";
 
 WebSocketClient webSocketClient;
