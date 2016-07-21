@@ -1,22 +1,16 @@
 #include <ESP8266WiFi.h>
 #include <WebSocketClient.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 #include "./passwords.h"
 
-char path[] = "/";
+#define DEBUGGING
+
+char path[] = "/control";
 char host[] = "192.168.1.127";
 
 WebSocketClient webSocketClient;
 
 // Use WiFiClient class to create TCP connections
 WiFiClient client;
-
-#define TEMPERATURE_PIN 5
-
-OneWire temperatureWire(TEMPERATURE_PIN);
-
-DallasTemperature temperatureSensor(&temperatureWire);
 
 void setup() {
   Serial.begin(115200);
@@ -66,9 +60,6 @@ void setup() {
     }  
   }
 
-
-  temperatureSensor.begin();
-
 }
 
 
@@ -82,9 +73,6 @@ void loop() {
       Serial.print("Received data: ");
       Serial.println(data);
     }
-    
-    temperatureSensor.requestTemperatures();
-    Serial.println(temperatureSensor.getTempCByIndex(0));
     
     webSocketClient.sendData(String(analogRead(A0)));
     
