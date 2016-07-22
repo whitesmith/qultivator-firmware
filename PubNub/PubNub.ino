@@ -2,8 +2,8 @@
 #include "./passwords.h"
 #include <PubNub.h>
 
-char pubkey[] = "3xXLSA.6Xa6qw:MzBDNXujxbVSHde5";
-char subkey[] = "3xXLSA.6Xa6qw:MzBDNXujxbVSHde5";
+char pubkey[] = "<insert-key-here>";
+char subkey[] = "<insert-key-here>";
 char origin[] = "pubnub.ably.io";
 const static char channel[] = "arduino";
 
