@@ -5,5 +5,7 @@ It is a IoT project that allows plants to be individually monitored and taken ca
 Several environmental data can be gathered using sensors, and both a light and irrigation system can be controlled in real-time using the Qultivator website.
 
 https://qultivator.whitesmith.co
+
 https://github.com/whitesmith/qultivator-website
+
 https://github.com/whitesmith/qultivator-websockets
