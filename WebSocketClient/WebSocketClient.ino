@@ -8,8 +8,7 @@
 #include <Wire.h>
 #include "Adafruit_TCS34725.h"
 
-char path[] = "/";
-char host[] = "192.168.1.127";
+String id = "p01";
 
 WebSocketClient webSocketClient;
 
@@ -31,6 +30,8 @@ uint16_t r, g, b, c, lightTemperature, lux;
 uint16_t soilHumidity;
 
 #define LIGHT_PIN 12
+
+#define WATER_PIN 13
 
 void setup() {
   Serial.begin(115200);
@@ -59,7 +60,7 @@ void setup() {
 
 
   // Connect to the websocket server
-  if (client.connect(host, 8080)) {
+  if (client.connect(host, 80)) {
     Serial.println("Connected");
   } else {
     Serial.println("Connection failed.");
@@ -86,13 +87,25 @@ void setup() {
   lightSensor.begin();
   pinMode(SOIL_PIN, INPUT);
   pinMode(LIGHT_PIN, OUTPUT);
+  pinMode(WATER_PIN, OUTPUT);
 
 }
 
-
+boolean waterON = false;
+unsigned long previousMillis = 0;
+const long interval = 3000;
 void loop() {
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval) {
+    if (waterON) {
+      digitalWrite(WATER_PIN, 0);
+      waterON = false;
+    }
+  }
+
   String data;
-  String message = "{";
+  String message = "{\"id\": \"" + id + "\",";
 
   if (client.connected()) {
 
@@ -100,38 +113,43 @@ void loop() {
     if (data.length() > 0) {
       Serial.print("Received data: ");
       Serial.println(data);
-      switch(data){
-        case: "lightON":
-        digitalWrite(LIGHT_PIN,0);
-        break;
-        case: "lightOFF":
-        digitalWrite(LIGHT_PIN,1); 
-        break;
-        default:
-        break;
+      if (data == "lightON") {
+        digitalWrite(LIGHT_PIN, 0);
+      }
+      else if (data == "lightOFF") {
+        digitalWrite(LIGHT_PIN, 1);
+      }
+      else if (data == "waterON") {
+        digitalWrite(WATER_PIN, 1);
+        waterON = true;
       }
     }
 
-    soilTemperatureSensor.requestTemperatures();
-    
-    message += "\"sT\":" + String( soilTemperatureSensor.getTempCByIndex(0) ) + ",";
-    message += "\"eH\":" + String( environmentSensor.readHumidity() ) + ",";
-    message += "\"eT\":" + String( environmentSensor.readTemperature() ) + ",";
+    if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
 
-    lightSensor.getRawData(&r, &g, &b, &c);
-    lightTemperature = lightSensor.calculateColorTemperature(r, g, b);
-    lux = lightSensor.calculateLux(r, g, b);
-    
-    message += "\"lT\":" + String( lightTemperature ) + ",";
-    message += "\"lI\":" + String( lux ) + ",";
-    
-    soilHumidity = analogRead(SOIL_PIN);
-    message += "\"sH\":" + String( soilHumidity );
-    message += "}";
 
-    Serial.println(message);
+      soilTemperatureSensor.requestTemperatures();
 
-    webSocketClient.sendData(message);
+      message += "\"sT\":" + String( soilTemperatureSensor.getTempCByIndex(0) ) + ",";
+      message += "\"eH\":" + String( environmentSensor.readHumidity() ) + ",";
+      message += "\"eT\":" + String( environmentSensor.readTemperature() ) + ",";
+
+      lightSensor.getRawData(&r, &g, &b, &c);
+      lightTemperature = lightSensor.calculateColorTemperature(r, g, b);
+      lux = lightSensor.calculateLux(r, g, b);
+
+      message += "\"lT\":" + String( lightTemperature ) + ",";
+      message += "\"lI\":" + String( lux ) + ",";
+
+      soilHumidity = analogRead(SOIL_PIN);
+      message += "\"sH\":" + String( soilHumidity );
+      message += "}";
+
+      Serial.println(message);
+
+      webSocketClient.sendData(message);
+    }
 
   } else {
     Serial.println("Client disconnected.");
@@ -140,7 +158,5 @@ void loop() {
     }
   }
 
-  // wait to fully let the client disconnect
-  delay(3000);
-
+  yield();
 }

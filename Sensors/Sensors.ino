@@ -24,7 +24,6 @@ void setup() {
   soilTemperatureSensor.begin();
   environmentSensor.begin();
   lightSensor.begin();
-
   pinMode(SOIL_PIN, INPUT);
 }
 
